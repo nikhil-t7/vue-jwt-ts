@@ -25,3 +25,4 @@ See [Configuration Reference](https://cli.vuejs.org/config/).
 # vue-jwt-ts
 # vue-jwt-ts
 "# vue-jwt-ts" 
+"# vue-jwt-ts" 
