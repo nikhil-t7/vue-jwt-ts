@@ -9,7 +9,8 @@ const state = () => ({
         userId: "",
         userName: "",
     },
-    loginStatus:'' as string
+    loginStatus:'' as string,
+    optVerificationStatus : '' as string
 });
 
 //to access state
@@ -26,6 +27,9 @@ const getters = {
         }
         return tokenAlive(state.authData.tokenExp);
     },
+    isOtpVerified(state:any){
+        return state.optVerificationStatus
+    }
 };
 
   //calling async calls
@@ -53,6 +57,36 @@ const getters = {
             }
             
     },
+    async getOTP({commit}:any,payload:any){
+        const newPayload = {
+            mobileNumber:payload.phNumber
+        }
+        console.log("getOTP "+payload.phNumber)
+        const response :any = await axios.post("http://localhost:3001/send-verification-otp",newPayload)
+        .catch(err =>{
+            console.log(err)
+        })
+        console.log(response)
+        console.log(response.data.verification.status)
+    },
+    async verifyOTP({commit}:any,payload:any){
+        const newPayload = {
+            mobileNumber:payload.phNumber,
+            code:payload.code
+        }
+        const response :any = await axios.post("http://localhost:3001/verify-otp",newPayload)
+        .catch(err =>{
+            console.log(err)
+        })
+        console.log(response)
+        console.log(response.data.verification_check.status)
+        if(response && response.data){
+            commit('saveOtpVerificationStatus',response.data)
+        }
+    },
+    logout({commit}:any,payload:any){
+        commit('setLogout','')
+    }
 };
 
   //state changer for state
@@ -80,6 +114,19 @@ const getters = {
         },
         setLoginStatus(state:any, value:any){
             state.loginStatus = value;
+        },
+        saveOtpVerificationStatus(state:any,value:any){
+            state.optVerificationStatus = value.verification_check.status
+        },
+        setLogout(state:any,value:any){
+            state.loginStatus = ''
+            state.optVerificationStatus = ''
+            state.authData.token = ''
+            state.authData.refresh_token = ''
+            state.authData.tokenExp = ''
+            state.authData.userId = ''
+            state.authData.userName = ''
+            localStorage.clear()
         }
 };
 

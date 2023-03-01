@@ -13,6 +13,14 @@
         <label for="password">Password</label>
         <input type="password" class="form-control" v-model="password" placeholder="password">
     </div>
+    <div class="form-group" style="margin:10px 0">
+        <label for="text">Enter Phone Number</label>
+        <input type="text" class="form-control" v-model="phNumber" placeholder="Phone Number">
+    </div>
+    <button style="margin:10px 0" class="btn btn-primary btn-block" @click="otpHandler()">Send OTP</button>
+    <div class="form-group">
+        <input type="text" class="form-control" v-model="otpCode" placeholder="Received OTP">
+    </div>
     <br />
     <button class="btn btn-primary btn-block" @click="loginHandler()">Login</button>
 </form>
@@ -28,27 +36,53 @@ export default defineComponent ({
         return {
             username: '',
             password: '',
-            invalidLogin : false
+            invalidLogin : false,
+            phNumber : '',
+            otpCode :''
         }
     },
     computed:{
     ...mapGetters('auth',{
-        getterLoginStatus:'getLoginStatus'
+        getterLoginStatus:'getLoginStatus',
+        getOtpVerificationStatus: 'isOtpVerified'
     })
     },
     methods:{
         ...mapActions('auth',{
-            actionLogin:'login'
+            actionLogin:'login',
+            actionGetOtp : 'getOTP',
+            actionVerifyOtp : 'verifyOTP'
         }),
+        
         async loginHandler(){
-            await this.actionLogin({username:this.username, password:this.password});
-            if(this.getterLoginStatus === 'success'){
-                //alert('login success');
-                this.$router.push('/dashboard');
-            }else{
+
+            if(this.username && this.password && this.phNumber){
+                this.invalidLogin = false
+                await this.actionVerifyOtp({phNumber:this.phNumber,code:this.otpCode})
+            }
+            //console.log(this.getOtpVerificationStatus+"From LoginCom")
+            if(this.getOtpVerificationStatus === 'approved'){
+                await this.actionLogin({username:this.username, password:this.password});
+                if(this.getterLoginStatus === 'success'){
+                    //alert('login success');
+                    this.$router.push('/dashboard');
+                }else{
+                this.invalidLogin = true
+                //alert('failed to login')
+                }
+            }
+            else{
                 this.invalidLogin = true
                 //alert('failed to login')
             }
+        },
+        async otpHandler(){
+            if(this.username && this.password && this.phNumber){
+                await this.actionGetOtp({phNumber:this.phNumber})
+            }else{
+                this.invalidLogin = true
+            }
+            
         }
     }
 });

@@ -38,7 +38,7 @@ export const routeConfig = createRouter({
 });
 
 routeConfig.beforeEach((to,from, next) => {
-    
+    //console.log('to path '+to.fullPath)
     //To Check authentication when user trying to access dashboard
     //after closing the browser but check for access token stored 
     //in local browse and save 
